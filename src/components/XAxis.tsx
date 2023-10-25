@@ -61,8 +61,8 @@ const calculateTickInterval = (width: number, numDays: number, referenceText: st
 };
 
 const measureText = (text: string): number => {
-  var canvas = document.createElement('canvas');
-  var ctx = canvas.getContext('2d');
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
   if (ctx) {
     ctx.font = '14px Arial';
     return ctx.measureText(text).width;

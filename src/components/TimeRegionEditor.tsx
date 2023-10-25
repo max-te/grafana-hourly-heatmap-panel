@@ -1,10 +1,10 @@
-import {} from '@emotion/core';
+import { } from '@emotion/core';
 import { StandardEditorProps } from '@grafana/data';
 import { Button, ColorPicker, Field, HorizontalGroup, Icon, IconButton, Input, useTheme } from '@grafana/ui';
 import { css } from 'emotion';
 import React, { useState } from 'react';
 
-interface Props extends StandardEditorProps<TimeRegion[], Settings> {}
+interface Props extends StandardEditorProps<TimeRegion[], Settings> { }
 
 type Time = {
   hour: number;
@@ -33,7 +33,7 @@ export type TimeRegion = {
   color: string;
 };
 
-interface Settings {}
+interface Settings { }
 
 export const TimeRegionEditor: React.FC<Props> = ({ value, onChange }) => {
   const onRegionChange = (index: number) => (region: TimeRegion) => {
@@ -143,6 +143,7 @@ const TimeRegionInput: React.FC<TimeRegionInputProps> = ({ value, onChange, onRe
         </div>
         <IconButton
           name="trash-alt"
+          aria-label="Remove"
           onClick={() => {
             onRemove();
           }}

@@ -1,6 +1,5 @@
 import { dateTimeParse } from '@grafana/data';
-import { useTheme } from '@grafana/ui';
-import Tippy from '@tippyjs/react';
+import { useTheme, Tooltip as GTooltip } from '@grafana/ui';
 import * as d3 from 'd3';
 import React from 'react';
 import 'tippy.js/dist/tippy.css';
@@ -77,7 +76,7 @@ export const Heatmap: React.FC<HeatmapProps> = ({
 
           if (tooltip) {
             return (
-              <Tippy
+              <GTooltip
                 key={i}
                 content={
                   <div>
@@ -90,10 +89,9 @@ export const Heatmap: React.FC<HeatmapProps> = ({
                   </div>
                 }
                 placement="bottom"
-                animation={false}
               >
                 {content}
-              </Tippy>
+              </GTooltip>
             );
           } else {
             return content;

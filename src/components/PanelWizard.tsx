@@ -1,16 +1,15 @@
 import React from "react";
-import { Badge, Icon, InfoBox, useTheme } from "@grafana/ui";
+import { Badge, Icon, Alert, useTheme2 } from "@grafana/ui";
 import { Field, FieldType } from "@grafana/data";
 import { css } from "emotion";
 
 interface Props {
     schema: FieldSchema[];
     fields?: Field[];
-    url: string;
 }
 
-export const PanelWizard = ({ schema, fields, url }: Props) => {
-    const theme = useTheme();
+export const PanelWizard = ({ schema, fields }: Props) => {
+    const theme = useTheme2();
 
     const report = validateFields(fields ?? [], schema);
 
@@ -23,9 +22,8 @@ export const PanelWizard = ({ schema, fields, url }: Props) => {
                 height: "100%",
             }}
         >
-            <InfoBox
+            <Alert
                 title="Configure your query"
-                url={url}
                 severity="info"
                 style={{ maxWidth: "500px" }}
             >
@@ -36,23 +34,23 @@ export const PanelWizard = ({ schema, fields, url }: Props) => {
                         <div
                             key={key}
                             className={css`
-                display: flex;
-                align-items: center;
-                padding-bottom: ${theme.spacing.sm};
-                & > * {
-                  margin-right: ${theme.spacing.sm};
-                }
-                & > *:last-child {
-                  margin-right: 0;
-                }
-              `}
+                                    display: flex;
+                                    align-items: center;
+                                    padding-bottom: ${theme.spacing(1)};
+                                    & > * {
+                                    margin-right: ${theme.spacing(1)};
+                                    }
+                                    & > *:last-child {
+                                    margin-right: 0;
+                                    }
+                                `}
                         >
                             {ok ? (
                                 <Icon
                                     name={"check-circle"}
                                     size={"lg"}
                                     style={{
-                                        color: theme.palette.brandSuccess,
+                                        color: theme.colors.success.main,
                                     }}
                                 />
                             ) : (
@@ -60,7 +58,7 @@ export const PanelWizard = ({ schema, fields, url }: Props) => {
                                     name="circle"
                                     size={"lg"}
                                     style={{
-                                        color: theme.colors.linkDisabled,
+                                        color: theme.colors.text.disabled,
                                     }}
                                 />
                             )}
@@ -75,7 +73,7 @@ export const PanelWizard = ({ schema, fields, url }: Props) => {
                         </div>
                     ))}
                 </div>
-            </InfoBox>
+            </Alert>
         </div>
     );
 };

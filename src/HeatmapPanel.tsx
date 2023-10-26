@@ -6,7 +6,6 @@ import { PanelWizard } from './components/PanelWizard';
 
 const usage = {
   schema: [{ type: FieldType.time }, { type: FieldType.number }],
-  url: 'https://github.com/marcusolsson/grafana-hourly-heatmap-panel',
 };
 
 interface Props extends PanelProps<HeatmapOptions> { }

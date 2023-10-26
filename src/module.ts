@@ -7,12 +7,6 @@ import {
   thresholdsOverrideProcessor,
 } from '@grafana/data';
 import * as d3 from 'd3';
-import {
-  FieldSelectEditor,
-  getPanelPluginOrFallback,
-  hasCapability,
-  standardOptionsCompat,
-} from 'grafana-plugin-support';
 import { TimeRegionEditor } from './components/TimeRegionEditor';
 import { HeatmapPanel } from './HeatmapPanel';
 import { HeatmapFieldConfig, HeatmapOptions } from './types';
@@ -20,39 +14,32 @@ import { HeatmapFieldConfig, HeatmapOptions } from './types';
 const paletteSelected = (colorPalette: string) => (config: HeatmapFieldConfig) => config.colorPalette === colorPalette;
 
 const buildStandardOptions = (): any => {
-  const options = [
-    FieldConfigProperty.Min,
-    FieldConfigProperty.Max,
-    FieldConfigProperty.Decimals,
-    FieldConfigProperty.Unit,
-  ];
+  const options = {
+    [FieldConfigProperty.Min]: {},
+    [FieldConfigProperty.Max]: {},
+    [FieldConfigProperty.Decimals]: {},
+    [FieldConfigProperty.Unit]: {},
+    [FieldConfigProperty.Color]: {},
+    [FieldConfigProperty.Thresholds]: {},
+  };
 
-  if (hasCapability('color-scheme')) {
-    options.push(FieldConfigProperty.Color);
-    options.push(FieldConfigProperty.Thresholds);
-  }
-
-  return standardOptionsCompat(options);
+  return options;
 };
 
 const buildColorPaletteOptions = () => {
   const options: Array<{ label: string; value: string; description?: string }> = [
     { value: 'custom', label: 'Custom', description: 'Define a custom color palette' },
-  ];
-
-  if (hasCapability('color-scheme')) {
-    options.push({
+    {
       value: 'fieldOptions',
       label: 'Field options',
-      description: 'Use color from field options (available from Grafana 7.3)',
-    });
-  }
+      description: 'Use color from field options',
+    }
+  ];
 
   return options.concat([...predefinedColorPalettes]);
 };
 
-export const plugin = getPanelPluginOrFallback(
-  'marcusolsson-hourly-heatmap-panel',
+export const plugin =
   new PanelPlugin<HeatmapOptions, HeatmapFieldConfig>(HeatmapPanel)
     .useFieldConfig({
       useCustomConfig: (builder) => {
@@ -143,24 +130,20 @@ export const plugin = getPanelPluginOrFallback(
     })
     .setPanelOptions((builder) => {
       return builder
-        .addCustomEditor({
-          id: 'timeFieldName',
+        .addFieldNamePicker({
           path: 'timeFieldName',
-          name: 'Time',
+          name: 'Time field',
           description: 'Defaults to the first time field.',
           category: ['Dimensions'],
-          editor: FieldSelectEditor,
           settings: {
             filterByType: [FieldType.time],
           },
         })
-        .addCustomEditor({
-          id: 'valueFieldName',
+        .addFieldNamePicker({
           path: 'valueFieldName',
-          name: 'Value',
+          name: 'Value field',
           description: 'Defaults to the first number field.',
           category: ['Dimensions'],
-          editor: FieldSelectEditor,
           settings: {
             filterByType: [FieldType.number],
           },
@@ -236,8 +219,7 @@ export const plugin = getPanelPluginOrFallback(
             ],
           },
         });
-    })
-);
+    });
 
 const predefinedColorPalettes = [
   // Diverging

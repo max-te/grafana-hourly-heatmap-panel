@@ -1,15 +1,15 @@
 import { FieldType, PanelProps } from '@grafana/data';
-import { PanelWizard } from 'grafana-plugin-support';
 import React from 'react';
 import { Chart } from './components/Chart';
 import { HeatmapOptions } from './types';
+import { PanelWizard } from './components/PanelWizard';
 
 const usage = {
   schema: [{ type: FieldType.time }, { type: FieldType.number }],
   url: 'https://github.com/marcusolsson/grafana-hourly-heatmap-panel',
 };
 
-interface Props extends PanelProps<HeatmapOptions> {}
+interface Props extends PanelProps<HeatmapOptions> { }
 
 /**
  * HeatmapPanel visualizes a heatmap with a histogram for each day along with

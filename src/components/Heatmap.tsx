@@ -2,7 +2,6 @@ import { GrafanaTheme2, dateTimeParse } from '@grafana/data';
 import { useTheme2, useStyles2, Tooltip as GTooltip } from '@grafana/ui';
 import * as d3 from 'd3';
 import React from 'react';
-import 'tippy.js/dist/tippy.css';
 import { BucketData } from '../bucket';
 import { TimeRegion } from './TimeRegionEditor';
 import { Tooltip } from './Tooltip';

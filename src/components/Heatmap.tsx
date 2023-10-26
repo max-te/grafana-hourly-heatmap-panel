@@ -1,11 +1,12 @@
-import { dateTimeParse } from '@grafana/data';
-import { useTheme, Tooltip as GTooltip } from '@grafana/ui';
+import { GrafanaTheme2, dateTimeParse } from '@grafana/data';
+import { useTheme2, useStyles2, Tooltip as GTooltip } from '@grafana/ui';
 import * as d3 from 'd3';
 import React from 'react';
 import 'tippy.js/dist/tippy.css';
 import { BucketData } from '../bucket';
 import { TimeRegion } from './TimeRegionEditor';
 import { Tooltip } from './Tooltip';
+import { css } from '@emotion/css';
 
 const minutesPerDay = 24 * 60;
 interface HeatmapProps {
@@ -22,6 +23,17 @@ interface HeatmapProps {
   cellBorder: boolean;
   tooltip: boolean;
 }
+
+const getStyles = (theme: GrafanaTheme2) => {
+  return {
+    cell: css`
+      &:hover {
+        filter: invert() brightness(.66) invert();
+        stroke: ${theme.colors.border.strong}
+      }
+    `
+  }
+};
 
 /**
  * A two-dimensional grid of colored cells.
@@ -40,7 +52,8 @@ export const Heatmap: React.FC<HeatmapProps> = ({
   cellBorder,
   tooltip,
 }) => {
-  const theme = useTheme();
+  const theme = useTheme2();
+  const styles = useStyles2(getStyles);
 
   const x = d3.scaleBand().domain(values).range([0, width]);
 
@@ -70,7 +83,10 @@ export const Heatmap: React.FC<HeatmapProps> = ({
               height={cellHeight}
               onMouseLeave={() => onHover(undefined)}
               onMouseEnter={() => onHover(d.value)}
-              stroke={cellBorder ? theme.colors.panelBg : undefined}
+              stroke={cellBorder ? theme.colors.background.primary : undefined}
+              strokeWidth={2 * 2}
+              className={styles.cell}
+              clipPath='fill-box'
             />
           );
 

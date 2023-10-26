@@ -2,6 +2,7 @@ import * as d3 from 'd3';
 import React from 'react';
 import { Quality } from '../types';
 import { uniqueId } from 'lodash';
+import { useTheme2 } from '@grafana/ui';
 
 export interface Props {
   width: number;
@@ -25,6 +26,8 @@ export interface Props {
  */
 export const ColorSpectrum: React.FC<Props> = React.memo(
   ({ width, height, colorDisplay, min, max, currentValue, indicator, quality }) => {
+    const theme = useTheme2();
+
     const calculateStepSize = (quality: Quality): number => {
       switch (quality) {
         case 'high':
@@ -54,7 +57,7 @@ export const ColorSpectrum: React.FC<Props> = React.memo(
       <>
         {indicator && currentValue ? (
           <g transform={`translate(${fromValueScale(currentValue)}, -7)`}>
-            <polygon points="-5,0 5,0 0,7" style={{ fill: 'white' }} />
+            <polygon points="-5,0 5,0 0,7" style={{ fill: theme.colors.text.primary }} />
           </g>
         ) : null}
 

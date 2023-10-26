@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import React from 'react';
 import { Quality } from '../types';
+import { uniqueId } from 'lodash';
 
 export interface Props {
   width: number;
@@ -45,6 +46,10 @@ export const ColorSpectrum: React.FC<Props> = React.memo(
 
     const fromValueScale = d3.scaleLinear().domain([min, max]).range([0, width]);
 
+    // These are inline SVGs. Multiple linearGradients with the same id will not be rendered correctly.
+    // Thus, we use a random unique id.
+    const gradientId = uniqueId("legend-gradient-");
+
     return (
       <>
         {indicator && currentValue ? (
@@ -54,12 +59,16 @@ export const ColorSpectrum: React.FC<Props> = React.memo(
         ) : null}
 
         <g>
-          {positionRange.map((pos, i) => {
-            const cellSize = pos + stepSize > width ? width - pos : stepSize;
-            return (
-              <rect key={i} x={pos} width={cellSize} height={height} fill={colorDisplay(toValueScale(pos) ?? 0)} />
-            );
-          })}
+          <defs>
+            <linearGradient id={gradientId} x1={0} y1={0} x2={1} y2={0}>
+              {positionRange.map((pos, i) => {
+                return (
+                  <stop key={i} offset={pos / width} stopColor={colorDisplay(toValueScale(pos) ?? 0)} />
+                );
+              })}
+            </linearGradient>
+          </defs>
+          <rect x={0} y={0} width={width} height={height} fill={`url('#${gradientId}')`} />
         </g>
       </>
     );

@@ -25,6 +25,7 @@ export interface HeatmapOptions {
 export interface HeatmapFieldConfig {
   colorPalette: string;
   invertPalette: boolean;
+  divergingPalette: boolean;
   nullValueColor: string;
 
   // Options for custom color palettes.

@@ -50,6 +50,19 @@ export const makeSpectrumColorScale = (
   }
 };
 
+export const makeDivergingSpectrumColorScale = (
+  palette: string,
+  min: number,
+  max: number,
+  invertPalette: boolean
+): d3.ScaleDiverging<string> => {
+  if (invertPalette) {
+    return d3.scaleDiverging(interpolators[palette]).domain([max, 0, min]);
+  } else {
+    return d3.scaleDiverging(interpolators[palette]).domain([min, 0, max]);
+  }
+};
+
 interface InterpolatorLookup {
   [name: string]: d3.InterpolatorFactory<string, string>;
 }

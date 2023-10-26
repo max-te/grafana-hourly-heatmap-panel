@@ -101,6 +101,13 @@ export const plugin = getPanelPluginOrFallback(
             showIf: (config: HeatmapFieldConfig) =>
               config.colorPalette !== 'custom' && config.colorPalette !== 'fieldOptions',
           })
+          .addBooleanSwitch({
+            path: 'divergingPalette',
+            name: 'Diverging palette',
+            defaultValue: false,
+            showIf: (config: HeatmapFieldConfig) =>
+              config.colorPalette !== 'custom' && config.colorPalette !== 'fieldOptions',
+          })
           .addColorPicker({
             path: 'nullValueColor',
             name: 'Null value color',

@@ -2,8 +2,8 @@ import { Field, ThresholdsConfig, ThresholdsMode, TimeRange } from '@grafana/dat
 import { useTheme2 } from '@grafana/ui';
 import React, { useMemo, useState } from 'react';
 import { bucketize } from '../bucket';
-import { makeCustomColorScale, makeSpectrumColorScale } from '../colors';
-import { Quality } from '../types';
+import { makeCustomColorScale, makeDivergingSpectrumColorScale, makeSpectrumColorScale } from '../colors';
+import { HeatmapFieldConfig, Quality } from '../types';
 import { HeatmapWithAxes } from './HeatmapWithAxes';
 import { Legend } from './Legend';
 import { TimeRegion } from './TimeRegionEditor';
@@ -123,9 +123,10 @@ export const Chart: React.FC<ChartProps> = ({
  * @param field from which the colors are configured
  */
 const buildColorMapper = (field: Field<number>): ((value: number) => string) => {
-  const customFieldOptions = field.config.custom;
+  const customFieldOptions = field.config.custom as HeatmapFieldConfig;
   const colorPalette = customFieldOptions.colorPalette;
   const invertPalette = customFieldOptions.invertPalette;
+  const divergingPalette = customFieldOptions.divergingPalette;
   const nullValueColor = customFieldOptions.nullValueColor;
   const colorSpace = customFieldOptions.colorSpace;
   const colorThresholds: ThresholdsConfig = customFieldOptions.thresholds ?? {
@@ -141,7 +142,12 @@ const buildColorMapper = (field: Field<number>): ((value: number) => string) => 
     case "fieldOptions":
       return (value: number): string => field.display!(value).color!;
     default:
-      const spectrumColorScale = makeSpectrumColorScale(colorPalette, field.config.min!, field.config.max!, invertPalette);
-      return (value: number): string => spectrumColorScale(value) ?? nullValueColor;
+      if (divergingPalette) {
+        const divergingColorScale = makeDivergingSpectrumColorScale(colorPalette, field.config.min!, field.config.max!, invertPalette);
+        return (value: number): string => divergingColorScale(value) ?? nullValueColor;
+      } else {
+        const spectrumColorScale = makeSpectrumColorScale(colorPalette, field.config.min!, field.config.max!, invertPalette);
+        return (value: number): string => spectrumColorScale(value) ?? nullValueColor;
+      }
   }
 };

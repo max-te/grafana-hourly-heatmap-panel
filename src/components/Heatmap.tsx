@@ -1,5 +1,5 @@
-import { GrafanaTheme2, dateTimeParse } from '@grafana/data';
-import { useTheme2, useStyles2, Tooltip as GTooltip } from '@grafana/ui';
+import { DataHoverClearEvent, DataHoverEvent, DateTime, GrafanaTheme2, dateTimeParse } from '@grafana/data';
+import { useTheme2, useStyles2, Tooltip as GTooltip, usePanelContext } from '@grafana/ui';
 import * as d3 from 'd3';
 import React from 'react';
 import { BucketData } from '../bucket';
@@ -53,6 +53,22 @@ export const Heatmap: React.FC<HeatmapProps> = ({
 }) => {
   const theme = useTheme2();
   const styles = useStyles2(getStyles);
+  const { eventBus } = usePanelContext();
+
+  const setGlobalTooltip = (time: DateTime) => {
+    eventBus.publish<DataHoverEvent>({
+      payload: { point: { time: time } },
+      type: DataHoverEvent.type
+    });
+  }
+
+  const unsetGlobalTooltip = () => {
+    eventBus.publish<DataHoverClearEvent>({
+      payload: {},
+      type: DataHoverClearEvent.type
+    });
+  }
+
 
   const x = d3.scaleBand().domain(values).range([0, width]);
 
@@ -63,6 +79,7 @@ export const Heatmap: React.FC<HeatmapProps> = ({
 
   const intervalMinutes = dailyIntervalMinutes[1] - dailyIntervalMinutes[0];
   const pixelsPerMinute = height / intervalMinutes;
+  const bucketMinutes = intervalMinutes / numBuckets;
 
   return (
     <>
@@ -70,6 +87,7 @@ export const Heatmap: React.FC<HeatmapProps> = ({
         {data.points.map((d, i) => {
           const startOfDay = dateTimeParse(d.dayMillis, { timeZone }).startOf('day');
           const bucketStart = dateTimeParse(d.bucketStartMillis, { timeZone });
+          const bucketMid = bucketStart.add(bucketMinutes / 2, 'minutes');
           const minutesSinceStartOfDay = bucketStart.hour!() * 60 + bucketStart.minute!();
           const displayValue = data.valueField.display!(d.value);
 
@@ -80,8 +98,8 @@ export const Heatmap: React.FC<HeatmapProps> = ({
               fill={colorDisplay(d.value)}
               width={cellWidth}
               height={cellHeight}
-              onMouseLeave={() => onHover(undefined)}
-              onMouseEnter={() => onHover(d.value)}
+              onMouseLeave={() => { unsetGlobalTooltip(); onHover(undefined) }}
+              onMouseEnter={() => { setGlobalTooltip(bucketMid); onHover(d.value); }}
               stroke={cellBorder ? theme.colors.background.primary : undefined}
               strokeWidth={2 * 2}
               className={styles.cell}

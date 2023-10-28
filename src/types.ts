@@ -34,5 +34,4 @@ export interface HeatmapFieldConfig {
 
   // Options for reducing buckets.
   calculation: Calculation;
-  groupBy: number;
 }

@@ -6,7 +6,7 @@ import {
   getDisplayProcessor,
   GrafanaTheme2,
   TimeRange,
-  TimeZone,
+  getSeriesTimeStep
 } from '@grafana/data';
 import * as d3 from 'd3';
 
@@ -46,7 +46,7 @@ const reduce = (agg: PointSet[], calculation: (n: Array<number | undefined>) => 
 };
 
 // groupByMinutes groups a set of points
-export const groupByMinutes = (points: Point[], minutes: number, timeZone: string): PointSet[] => {
+export const groupByMinutes = (points: Point[], minutes: number): PointSet[] => {
   // Create keys for interval start.
   const rounded = points.map((point) => {
     const intervalStart = dateTime(point.time);
@@ -102,8 +102,8 @@ export const bucketize = (
 ): BucketData => {
   // Convert data frame fields to rows.
   const rows = Array.from({ length: timeField.values.length }, (_, i) => ({
-    time: timeField.values.get(i),
-    value: valueField.values.get(i),
+    time: timeField.values[i],
+    value: valueField.values[i],
   }));
 
   // Get the time range extents in the dashboard time zone.
@@ -125,11 +125,14 @@ export const bucketize = (
     return dailyInterval[0] <= hour && hour < dailyInterval[1];
   });
 
+  const bucketSize = getSeriesTimeStep(timeField) / 60_000;
+
   // Extract the field configuration..
   const customData = valueField.config.custom;
 
+
   // Group and reduce values.
-  const groupedByMinutes = groupByMinutes(rowsWithinDailyInterval, customData.groupBy, timeZone);
+  const groupedByMinutes = groupByMinutes(rowsWithinDailyInterval, bucketSize);
   const reducedMinutes = reduce(groupedByMinutes, calculations[customData.calculation]);
 
   const aggregatedPoints = groupByDay(reducedMinutes).flatMap(({ time, values }) =>
@@ -148,7 +151,7 @@ export const bucketize = (
   );
 
   return {
-    numBuckets: Math.floor(minutesPerDay / customData.groupBy),
+    numBuckets: Math.floor(minutesPerDay / bucketSize),
     points: aggregatedPoints,
     valueField,
     timeField,
@@ -159,7 +162,7 @@ export const bucketize = (
 // aggregated values rather than the raw values.
 //
 // TODO: While this works, it feels like hacky. Is there a better way to do this?
-const recalculateMinMax = (field: Field<number>, values: number[], theme: GrafanaTheme2, timeZone: TimeZone) => {
+const recalculateMinMax = (field: Field<number>, values: number[], theme: GrafanaTheme2, timeZone: string) => {
   // Future versions of Grafana will change how the min and max are calculated.
   // For example, if Min or Max are set to auto, they will be undefined.
   //

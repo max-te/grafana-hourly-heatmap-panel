@@ -45,19 +45,6 @@ export const plugin =
       useCustomConfig: (builder) => {
         builder
           .addSelect({
-            path: 'groupBy',
-            name: 'Group by',
-            settings: {
-              options: [
-                { value: 15, label: '15 minutes' },
-                { value: 30, label: '30 minutes' },
-                { value: 60, label: '60 minutes' },
-                { value: 120, label: '120 minutes' },
-              ],
-            },
-            defaultValue: 60,
-          })
-          .addSelect({
             path: 'calculation',
             name: 'Calculation',
             settings: {

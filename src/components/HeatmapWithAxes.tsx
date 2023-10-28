@@ -40,7 +40,7 @@ export const HeatmapWithAxes: React.FC<HeatmapWithAxesProps> = ({
   // calculate the offsets dynamically.
   const offset = {
     top: 5,
-    left: 35,
+    left: 40,
     bottom: 20,
   };
 

@@ -58,9 +58,9 @@ export const Chart: React.FC<ChartProps> = ({
   const colorMapper = buildColorMapper(valueField);
 
   // Calculate dimensions for the legend.
-  const legendPadding = { top: 10, left: 35, bottom: 0, right: 10 };
+  const legendPadding = { top: 15, left: 40, bottom: 0, right: 10 };
   const legendWidth = width - (legendPadding.left + legendPadding.right);
-  const legendHeight = 40;
+  const legendHeight = 35;
 
   // Heatmap expands to fill any space not used by the legend.
   const heatmapPadding = { top: 0, left: 0, bottom: 0, right: legendPadding.right };

@@ -1,4 +1,5 @@
 import { dateTime, DateTimeDuration, toDuration } from '@grafana/data';
+import { useTheme2 } from '@grafana/ui';
 import * as d3 from 'd3';
 import React from 'react';
 
@@ -8,13 +9,14 @@ interface YAxisProps {
 }
 
 export const YAxis: React.FC<YAxisProps> = React.memo(({ height, dailyInterval }) => {
+  const theme = useTheme2();
   const y = d3.scaleLinear().domain(dailyInterval).rangeRound([0, height]);
 
   const every = calculateTickHeight(height);
 
   const yAxis: any = d3
     .axisLeft(y)
-    .tickValues(d3.range(dailyInterval[0], dailyInterval[1], every))
+    .tickValues(d3.range(dailyInterval[0], dailyInterval[1] + 1, every))
     .tickFormat((d) => formatDuration(toDuration(d as number, 'hours'), 'HH:mm'));
 
   return (
@@ -24,7 +26,9 @@ export const YAxis: React.FC<YAxisProps> = React.memo(({ height, dailyInterval }
 
         // Remove junk.
         container.select('.domain').remove();
-        container.selectAll('line').remove();
+        // Theming
+        container.selectAll('line').attr("stroke", theme.colors.border.medium).attr("stroke-width", 2);
+        container.attr('font-family', theme.typography.bodySmall.fontFamily);
       }}
     />
   );

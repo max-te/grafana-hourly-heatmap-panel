@@ -1,4 +1,4 @@
-import { DateTime, dateTimeParse } from '@grafana/data';
+import { DateTime, dateTimeAsMoment, dateTimeParse } from '@grafana/data';
 import { useTheme2 } from '@grafana/ui';
 import * as d3 from 'd3';
 import React from 'react';
@@ -20,7 +20,9 @@ const localeOptions: Intl.DateTimeFormatOptions = {
 const referenceText = dateTimeParse(0).toDate().toLocaleDateString(undefined, localeOptions);
 
 export const XAxis: React.FC<XAxisProps> = React.memo(({ width, values, from, to, numDays, timeZone }) => {
-  const xTime = d3.scaleTime().domain([from.subtract(12, 'h').toDate(), to.subtract(12, 'h').toDate()]).range([0, width]);
+  const fromShifted = dateTimeAsMoment(from).clone().subtract(12, 'h');
+  const toShifted = dateTimeAsMoment(to).clone().subtract(12, 'h');
+  const xTime = d3.scaleTime().domain([fromShifted, toShifted]).range([0, width]);
 
   const theme = useTheme2();
   const { fontSize, fontFamily } = theme.typography.bodySmall;

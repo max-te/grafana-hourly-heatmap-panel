@@ -1,4 +1,4 @@
-import { DataHoverClearEvent, DataHoverEvent, DateTime, GrafanaTheme2, dateTimeParse } from '@grafana/data';
+import { DataHoverClearEvent, DataHoverEvent, DateTime, GrafanaTheme2, dateTimeAsMoment, dateTimeParse } from '@grafana/data';
 import { useTheme2, useStyles2, Tooltip as GTooltip, usePanelContext } from '@grafana/ui';
 import * as d3 from 'd3';
 import React from 'react';
@@ -87,7 +87,7 @@ export const Heatmap: React.FC<HeatmapProps> = ({
         {data.points.map((d, i) => {
           const startOfDay = dateTimeParse(d.dayMillis, { timeZone }).startOf('day');
           const bucketStart = dateTimeParse(d.bucketStartMillis, { timeZone });
-          const bucketMid = bucketStart.add(bucketMinutes / 2, 'minutes');
+          const bucketMid = (dateTimeAsMoment(bucketStart).clone() as DateTime).add(bucketMinutes / 2, 'minutes');
           const minutesSinceStartOfDay = bucketStart.hour!() * 60 + bucketStart.minute!();
           const displayValue = data.valueField.display!(d.value);
 

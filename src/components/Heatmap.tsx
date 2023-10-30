@@ -1,7 +1,7 @@
 import { DataHoverClearEvent, DataHoverEvent, DateTime, GrafanaTheme2, dateTimeAsMoment, dateTimeParse } from '@grafana/data';
 import { useTheme2, useStyles2, Tooltip as GTooltip, usePanelContext } from '@grafana/ui';
 import * as d3 from 'd3';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BucketData } from '../bucket';
 import { TimeRegion } from './TimeRegionEditor';
 import { Tooltip } from './Tooltip';
@@ -54,21 +54,24 @@ export const Heatmap: React.FC<HeatmapProps> = ({
   const theme = useTheme2();
   const styles = useStyles2(getStyles);
   const { eventBus } = usePanelContext();
+  const [hoverData, setHoverData] = useState<null | [DateTime, number]>(null);
 
-  const setGlobalTooltip = (time: DateTime) => {
-    eventBus.publish<DataHoverEvent>({
-      payload: { point: { time: time } },
-      type: DataHoverEvent.type
-    });
-  }
-
-  const unsetGlobalTooltip = () => {
-    eventBus.publish<DataHoverClearEvent>({
-      payload: {},
-      type: DataHoverClearEvent.type
-    });
-  }
-
+  useEffect(() => {
+    if (hoverData !== null) {
+      let [time, value] = hoverData;
+      eventBus.publish<DataHoverEvent>({
+        payload: { point: { time: time } },
+        type: DataHoverEvent.type
+      });
+      onHover(value);
+    } else {
+      eventBus.publish<DataHoverClearEvent>({
+        payload: {},
+        type: DataHoverClearEvent.type
+      });
+      onHover(undefined);
+    }
+  }, [hoverData, eventBus, onHover]);
 
   const x = d3.scaleBand().domain(values).range([0, width]);
 
@@ -98,8 +101,8 @@ export const Heatmap: React.FC<HeatmapProps> = ({
               fill={colorDisplay(d.value)}
               width={cellWidth}
               height={cellHeight}
-              onMouseLeave={() => { unsetGlobalTooltip(); onHover(undefined) }}
-              onMouseEnter={() => { setGlobalTooltip(bucketMid); onHover(d.value); }}
+              onMouseLeave={() => { setHoverData(null); }}
+              onMouseEnter={() => { setHoverData([bucketMid, d.value]); }}
               stroke={cellBorder ? theme.colors.background.primary : undefined}
               strokeWidth={2 * 2}
               className={styles.cell}

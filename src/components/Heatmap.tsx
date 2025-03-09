@@ -1,13 +1,13 @@
 import { DataHoverClearEvent, DataHoverEvent, DateTime, GrafanaTheme2, dateTimeAsMoment, dateTimeParse } from '@grafana/data';
 import { useTheme2, useStyles2, Tooltip as GTooltip, usePanelContext } from '@grafana/ui';
 import * as d3 from 'd3';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { BucketData } from '../bucket';
 import { TimeRegion } from './TimeRegionEditor';
 import { Tooltip } from './Tooltip';
 import { css } from '@emotion/css';
 
-const minutesPerDay = 24 * 60;
+// const minutesPerDay = 24 * 60;
 interface HeatmapProps {
   values: string[];
   data: BucketData;
@@ -54,13 +54,12 @@ export const Heatmap: React.FC<HeatmapProps> = ({
   const theme = useTheme2();
   const styles = useStyles2(getStyles);
   const { eventBus } = usePanelContext();
-  const [hoverData, setHoverData] = useState<null | [DateTime, number]>(null);
-
-  useEffect(() => {
-    if (hoverData !== null) {
-      let [time, value] = hoverData;
+  const hoverData = useRef<null | [DateTime, number]>(null);
+  const setHoverData = useCallback((data: null | [DateTime, number]) => {
+    if (data !== null) {
+      const [time, value] = data;
       eventBus.publish<DataHoverEvent>({
-        payload: { point: { time: time } },
+        payload: { point: { time: time.unix() * 1000 } },
         type: DataHoverEvent.type
       });
       onHover(value);
@@ -71,16 +70,16 @@ export const Heatmap: React.FC<HeatmapProps> = ({
       });
       onHover(undefined);
     }
-  }, [hoverData, eventBus, onHover]);
+    hoverData.current = data;
+  }, [eventBus, onHover]);
 
-  const x = d3.scaleBand().domain(values).range([0, width]);
+  const x = d3.scaleBand().domain(values).range([0, width]).rangeRound([0, width]);
 
-  const y = d3.scaleLinear().domain(dailyIntervalMinutes).range([0, height]);
+  const y = d3.scaleLinear().domain(dailyIntervalMinutes).range([0, height]).rangeRound([0, height]);
 
-  const cellWidth = Math.ceil(x.bandwidth());
-  const cellHeight = bucketHeight(height, numBuckets, dailyIntervalMinutes);
+  const cellWidth = Math.ceil(x.bandwidth() + 0.5);
 
-  const intervalMinutes = dailyIntervalMinutes[1] - dailyIntervalMinutes[0];
+  const intervalMinutes = dailyIntervalMinutes[1] - dailyIntervalMinutes[0] + 1;
   const pixelsPerMinute = height / intervalMinutes;
   const bucketMinutes = intervalMinutes / numBuckets;
 
@@ -93,27 +92,32 @@ export const Heatmap: React.FC<HeatmapProps> = ({
           const bucketMid = (dateTimeAsMoment(bucketStart).clone() as DateTime).add(bucketMinutes / 2, 'minutes');
           const minutesSinceStartOfDay = bucketStart.hour!() * 60 + bucketStart.minute!();
           const displayValue = data.valueField.display!(d.value);
+          const thisCellY = y(minutesSinceStartOfDay) ?? 0;
+          const thisCellEndY = y(minutesSinceStartOfDay + bucketMinutes) ?? 0;
+          const thisCellHeight = (thisCellEndY - thisCellY) + 1;
 
           const content = (
             <rect
-              x={x(startOfDay.valueOf().toString())}
-              y={Math.ceil(y(minutesSinceStartOfDay) ?? 0)}
+              key={d.bucketStartMillis}
+              x={x(startOfDay.valueOf().toString()) ?? 0}
+              y={thisCellY}
               fill={colorDisplay(d.value)}
               width={cellWidth}
-              height={cellHeight}
+              height={thisCellHeight}
               onMouseLeave={() => { setHoverData(null); }}
               onMouseEnter={() => { setHoverData([bucketMid, d.value]); }}
               stroke={cellBorder ? theme.colors.background.primary : undefined}
               strokeWidth={2 * 2}
               className={styles.cell}
               clipPath='fill-box'
+              shapeRendering={'optimizeSpeed'}
             />
           );
 
           if (tooltip) {
             return (
               <GTooltip
-                key={i}
+                key={d.bucketStartMillis}
                 content={
                   <div>
                     <Tooltip
@@ -129,9 +133,8 @@ export const Heatmap: React.FC<HeatmapProps> = ({
                 {content}
               </GTooltip>
             );
-          } else {
-            return content;
           }
+          return content;
         })}
       </g>
       <g>
@@ -162,11 +165,4 @@ export const Heatmap: React.FC<HeatmapProps> = ({
       </g>
     </>
   );
-};
-
-const bucketHeight = (height: number, numBuckets: number, dailyIntervalMinutes: [number, number]) => {
-  const minutesPerBucket = minutesPerDay / numBuckets;
-  const intervalMinutes = dailyIntervalMinutes[1] - dailyIntervalMinutes[0];
-  const pixelsPerBucket = height / (intervalMinutes / minutesPerBucket);
-  return Math.ceil(pixelsPerBucket);
 };
